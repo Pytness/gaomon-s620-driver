@@ -18,10 +18,10 @@ libusb_context * GAOMON_S620::DeviceInterface::ctx = nullptr;
 struct libusb_device_handle * GAOMON_S620::DeviceInterface::dev_handle = nullptr;
 
 int GAOMON_S620::DeviceInterface::init() {
-	int32_t r = libusb_init(&ctx);
+	int32_t result = libusb_init(&ctx);
 
-	if(r < 0) {
-		printf("Init Error: %d\n", r);
+	if(result < 0) {
+		printf("Init Error: %d\n", result);
 		return 1;
 	}
 
@@ -41,12 +41,11 @@ int GAOMON_S620::DeviceInterface::init() {
 
 		if(libusb_detach_kernel_driver(dev_handle, 0) == 0)
 			printf("Kernel driver detached.\n");
-
 	}
 
-	r = libusb_claim_interface(dev_handle, 0);
+	result = libusb_claim_interface(dev_handle, 0);
 
-	if(r < 0) {
+	if(result < 0) {
 		printf("Cannot claim interface.\n");
 		return 1;
 	}
@@ -58,18 +57,21 @@ int GAOMON_S620::DeviceInterface::init() {
 
 int GAOMON_S620::DeviceInterface::read(uint8_t * output) {
 	return libusb_bulk_transfer(
-		dev_handle, BULK_EP_OUT,
-		(uint8_t *) output, PACKET_LENGTH,
-		nullptr, 0
+		dev_handle,
+		BULK_EP_OUT,
+		(uint8_t *) output,
+		PACKET_LENGTH,
+		nullptr,
+		0
 	);
 };
 
 int GAOMON_S620::DeviceInterface::stop() {
-	const int r = libusb_release_interface(dev_handle, 0);
+	const int result = libusb_release_interface(dev_handle, 0);
 
-	if(r != 0) {
+	if(result != 0) {
 		printf("Cannot release the interface.\n");
-		return r;
+		return result;
 	}
 
 	printf("Interface released.\n");
@@ -194,7 +196,7 @@ int GAOMON_S620::UInput::init() {
 	// Set device info
 	{
 		memset(&setup, 0, sizeof(setup));
-		snprintf(setup.name, UINPUT_MAX_NAME_SIZE, DEVICE_NAME);
+		strncpy(setup.name, DEVICE_NAME, UINPUT_MAX_NAME_SIZE);
 
 		setup.id = {
 			.bustype = BUS_VIRTUAL,
@@ -262,7 +264,7 @@ void GAOMON_S620::UInput::setPencilMode(const uint8_t mode) {
 		sendEvent(EV_KEY, BTN_STYLUS2, 0);
 };
 
-void GAOMON_S620::UInput::sync() {
+void GAOMON_S620::UInput::sync_input() {
 	struct input_event event = {
 		.type = EV_SYN
 	};

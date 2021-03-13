@@ -82,7 +82,7 @@ namespace GAOMON_S620 {
 		void moveTo(const uint16_t x, const uint16_t y);
 		void setPressure(const uint16_t pressure);
 		void setPencilMode(const uint8_t mode);
-		void sync();
+		void sync_input();
 	};
 
 	void init();
