@@ -3,3 +3,4 @@ build*/
 AX88179_178A/
 todo.txt
 driver
+*.o
