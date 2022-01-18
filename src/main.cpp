@@ -6,12 +6,15 @@
 #include <fcntl.h>           // For O_* constants
 #include <libusb-1.0/libusb.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "gaomon-s620.hpp"
 
 const char * SHARED_MEMORY_NAME = "gaomon-s620-driver::packet";
 
+static volatile sig_atomic_t running = 1;
 
+static void sig_handler(int _);
 GAOMON_S620::Packet * create_shared_packet(const char * name);
 
 int main() {
@@ -24,10 +27,11 @@ int main() {
 	auto shared_packet_data = create_shared_packet(SHARED_MEMORY_NAME);
 
 	GAOMON_S620::Packet * packet = new GAOMON_S620::Packet();
-
 	GAOMON_S620::init();
 
-	while (true) {
+	signal(SIGINT, sig_handler);
+
+	while (running == 1) {
 		const int r = GAOMON_S620::DeviceInterface::read((uint8_t *) packet);
 
 		if (r != 0) {
@@ -55,9 +59,15 @@ int main() {
 
 	GAOMON_S620::stop();
 	shm_unlink(SHARED_MEMORY_NAME);
+	munmap(shared_packet_data, sizeof(sizeof(GAOMON_S620::Packet)));
 	delete[] packet;
 
 	return 0;
+}
+
+static void sig_handler(int _) {
+	(void)_; // Ignore usage of _ variable
+	running = 0;
 }
 
 
