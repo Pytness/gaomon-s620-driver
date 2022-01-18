@@ -194,7 +194,7 @@ int GAOMON_S620::UInput::init() {
 	// Set device info
 	{
 		memset(&setup, 0, sizeof(setup));
-		snprintf(setup.name, UINPUT_MAX_NAME_SIZE, DEVICE_NAME);
+		strncpy(setup.name, DEVICE_NAME, UINPUT_MAX_NAME_SIZE);
 
 		setup.id = {
 			.bustype = BUS_VIRTUAL,
