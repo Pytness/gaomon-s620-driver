@@ -34,7 +34,19 @@ namespace GAOMON_S620 {
 		int32_t stop();
 	};
 
-	namespace Packet {
+		
+
+	class Packet {
+	private:
+		uint8_t head;
+		uint8_t type: 4;   // lowest nibble
+		uint8_t action: 4; // highest nibble
+		uint16_t xcord;
+		uint16_t ycord;
+		uint16_t pressure;
+		uint32_t left_over;
+
+	public:
 		enum Action: uint8_t {
 			NONE = 0,
 			PENCIL_UPDATE 		= 0x08,
@@ -48,27 +60,15 @@ namespace GAOMON_S620 {
 			TOP_BUTTON_PRESSED 	= 0x04
 		};
 
-		class Packet {
-		private:
-			uint8_t head;
-			uint8_t type: 4; // lowest nibble
-			uint8_t action: 4; // highest nibble
-			uint16_t xcord;
-			uint16_t ycord;
-			uint16_t pressure;
-			uint32_t left_over;
-
-		public:
-			Packet();
-			bool isButtonUpdate();
-			bool isPencilUpdate();
-			uint8_t getPressedButton();
-			uint8_t getPencilMode();
-			uint16_t getPencilX();
-			uint16_t getPencilY();
-			uint16_t getPencilPressure();
-			void printPacket();
-		};
+		Packet();
+		bool isButtonUpdate();
+		bool isPencilUpdate();
+		uint8_t getPressedButton();
+		uint8_t getPencilMode();
+		uint16_t getPencilX();
+		uint16_t getPencilY();
+		uint16_t getPencilPressure();
+		void printPacket();
 	};
 
 	namespace UInput {

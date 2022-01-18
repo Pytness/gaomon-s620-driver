@@ -11,6 +11,9 @@
 
 const char * SHARED_MEMORY_NAME = "gaomon-s620-driver::packet";
 
+
+GAOMON_S620::Packet * create_shared_packet(const char * name);
+
 int main() {
 
 	if (geteuid() != 0) {
@@ -18,24 +21,9 @@ int main() {
 		return EACCES;
 	}
 
-	// Create shared memory space
-	int shm_fd = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_EXCL | O_RDWR, 0666);
+	auto shared_packet_data = create_shared_packet(SHARED_MEMORY_NAME);
 
-	if (shm_fd == -1) {
-		shm_unlink(SHARED_MEMORY_NAME);
-		shm_fd = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_EXCL | O_RDWR, 0666);
-	}
-
-	ftruncate(shm_fd, sizeof(GAOMON_S620::Packet::Packet));
-
-	auto shared_packet_data = (GAOMON_S620::Packet::Packet *) mmap(
-			0, sizeof(GAOMON_S620::Packet::Packet),
-			PROT_WRITE, MAP_SHARED,
-			shm_fd, 0
-		);
-
-	GAOMON_S620::Packet::Packet * packet = new GAOMON_S620::Packet::Packet();
-
+	GAOMON_S620::Packet * packet = new GAOMON_S620::Packet();
 
 	GAOMON_S620::init();
 
@@ -70,4 +58,28 @@ int main() {
 	delete[] packet;
 
 	return 0;
+}
+
+
+GAOMON_S620::Packet * create_shared_packet(const char * name) {
+
+	constexpr int SHARED_MEM_FLAGS = O_CREAT | O_EXCL | O_RDWR;
+	// Create shared memory space
+	int shm_fd = shm_open(name, SHARED_MEM_FLAGS, 0666);
+
+	// Failed to open, may be because it already exists
+	if (shm_fd == -1) {
+		shm_unlink(name);
+		shm_fd = shm_open(name, SHARED_MEM_FLAGS, 0666);
+	}
+
+	ftruncate(shm_fd, sizeof(GAOMON_S620::Packet));
+
+	auto shared_packet_data = (GAOMON_S620::Packet *) mmap(
+			0, sizeof(GAOMON_S620::Packet),
+			PROT_WRITE, MAP_SHARED,
+			shm_fd, 0
+		);
+	
+	return shared_packet_data;
 }

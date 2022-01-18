@@ -81,7 +81,7 @@ int GAOMON_S620::DeviceInterface::stop() {
 };
 
 
-GAOMON_S620::Packet::Packet::Packet() {
+GAOMON_S620::Packet::Packet() {
 	this->head = 0;
 	this->type = 0;
 	this->action = 0;
@@ -91,35 +91,35 @@ GAOMON_S620::Packet::Packet::Packet() {
 	this->left_over = 0;
 };
 
-bool GAOMON_S620::Packet::Packet::isButtonUpdate() {
+bool GAOMON_S620::Packet::isButtonUpdate() {
 	return this->action == Action::BUTTON_UPDATE;
 };
 
-bool GAOMON_S620::Packet::Packet::isPencilUpdate() {
+bool GAOMON_S620::Packet::isPencilUpdate() {
 	return this->action == Action::PENCIL_UPDATE;
 };
 
-uint8_t GAOMON_S620::Packet::Packet::getPressedButton() {
+uint8_t GAOMON_S620::Packet::getPressedButton() {
 	return this->isButtonUpdate() ? this->ycord : 0;
 };
 
-uint8_t GAOMON_S620::Packet::Packet::getPencilMode() {
+uint8_t GAOMON_S620::Packet::getPencilMode() {
 	return this->type;
 };
 
-uint16_t GAOMON_S620::Packet::Packet::getPencilX() {
+uint16_t GAOMON_S620::Packet::getPencilX() {
 	return this->xcord;
 };
 
-uint16_t GAOMON_S620::Packet::Packet::getPencilY() {
+uint16_t GAOMON_S620::Packet::getPencilY() {
 	return this->ycord;
 };
 
-uint16_t GAOMON_S620::Packet::Packet::getPencilPressure() {
+uint16_t GAOMON_S620::Packet::getPencilPressure() {
 	return this->pressure;
 };
 
-void GAOMON_S620::Packet::Packet::printPacket() {
+void GAOMON_S620::Packet::printPacket() {
 	printf("Head: %02x\n", this->head);
 
 	printf("Action: %02x\n", this->action);
