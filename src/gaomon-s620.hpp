@@ -54,10 +54,10 @@ namespace GAOMON_S620 {
 		};
 
 		enum PencilMode: uint8_t {
-			HOVERING 		= 0x00,
-			TOUCHING 		= 0x01,
-			BOTTOM_BUTTON_PRESSED	= 0x02,
-			TOP_BUTTON_PRESSED 	= 0x04
+			HOVERING 		= 0b0000,
+			TOUCHING 		= 0b0001,
+			BOTTOM_BUTTON_PRESSED	= 0b0010,
+			TOP_BUTTON_PRESSED 	= 0b0100
 		};
 
 		Packet();
