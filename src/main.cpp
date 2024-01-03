@@ -24,25 +24,30 @@ int main() {
 		return EACCES;
 	}
 
-	auto shared_packet_data = create_shared_packet(SHARED_MEMORY_NAME);
+	Error init_error = GAOMON_S620::init();
 
+
+	if (init_error != Error::NO_ERROR) {
+		printf("Error: %s\n", error_to_string(init_error));
+		return 1;
+	}
+
+	auto shared_packet_data = create_shared_packet(SHARED_MEMORY_NAME);
 	GAOMON_S620::Packet * packet = new GAOMON_S620::Packet();
-	GAOMON_S620::init();
 
 	signal(SIGINT, sig_handler);
 
 	while (running == 1) {
-		const int r = GAOMON_S620::DeviceInterface::read((uint8_t *) packet);
+		const int read_result = GAOMON_S620::DeviceInterface::read((uint8_t *) packet);
 
-		if (r != 0) {
-			printf("Reading error: %d\n", r);
+		if (read_result != 0) {
+			printf("Reading error: %d\n", read_result);
 			break;
 		}
 
 		*shared_packet_data = *packet;
 
 		if (packet->isPencilUpdate()) {
-
 			GAOMON_S620::UInput::moveTo(packet->getPencilX(), packet->getPencilY());
 			GAOMON_S620::UInput::setPencilMode(packet->getPencilMode());
 			GAOMON_S620::UInput::setPressure(packet->getPencilPressure());
@@ -53,14 +58,18 @@ int main() {
 		}
 
 		GAOMON_S620::UInput::sync();
-
-		// printf("\n");
 	}
 
-	GAOMON_S620::stop();
+	Error stop_error = GAOMON_S620::stop();
+
+	if (stop_error != Error::NO_ERROR) {
+		printf("Error: %s\n", error_to_string(init_error));
+	}
+
 	shm_unlink(SHARED_MEMORY_NAME);
-	munmap(shared_packet_data, sizeof(sizeof(GAOMON_S620::Packet)));
-	delete[] packet;
+	munmap(shared_packet_data, sizeof(GAOMON_S620::Packet));
+
+	delete packet;
 
 	return 0;
 }

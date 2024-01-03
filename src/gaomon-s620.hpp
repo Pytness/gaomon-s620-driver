@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
 #include <libusb-1.0/libusb.h>
 #include <fcntl.h>
 #include <linux/input.h>
@@ -13,6 +11,25 @@
 
 #define VENDOR_ID	0x256c
 #define PRODUCT_ID 	0x006d
+
+enum  Error {
+	NO_ERROR = 0,
+	LIB_USB_INIT_FAILED,
+	OPEN_DEVICE_FAILED,
+	CLAIM_INTERFACE_FAILED,
+	INTERFACE_RELEASE_FAILED,
+};
+
+inline const char* error_to_string(Error error) {
+	switch (error) {
+		case NO_ERROR: return "NO_ERROR";
+		case LIB_USB_INIT_FAILED: return "LIB_USB_INIT_FAILED";
+		case OPEN_DEVICE_FAILED: return "OPEN_DEVICE_FAILED";
+		case CLAIM_INTERFACE_FAILED: return "CLAIM_INTERFACE_FAILED";
+		case INTERFACE_RELEASE_FAILED: return "INTERFACE_RELEASE_FAILED";
+		default: return "<unkown error>";
+	}
+}
 
 
 namespace GAOMON_S620 {
@@ -29,12 +46,12 @@ namespace GAOMON_S620 {
 		extern libusb_context * ctx;
 		extern struct libusb_device_handle * dev_handle;
 
-		int32_t init();
+		Error init();
 		int32_t read(uint8_t * output);
-		int32_t stop();
+		Error stop();
 	};
 
-		
+
 
 	class Packet {
 	private:
@@ -76,7 +93,7 @@ namespace GAOMON_S620 {
 		extern const char * DEVICE_NAME;
 		extern int fileDescriptor;
 
-		int32_t init();
+		Error init();
 		void stop();
 		void sendEvent(uint16_t type, uint16_t code, uint32_t value);
 		void moveTo(const uint16_t x, const uint16_t y);
@@ -85,6 +102,6 @@ namespace GAOMON_S620 {
 		void sync();
 	};
 
-	void init();
-	void stop();
+	Error init();
+	Error stop();
 };

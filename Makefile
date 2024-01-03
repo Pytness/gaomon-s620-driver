@@ -17,7 +17,7 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) $(FLAGS) -c $< -o $@ 
+	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJDIR)

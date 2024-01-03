@@ -17,19 +17,19 @@
 libusb_context * GAOMON_S620::DeviceInterface::ctx = nullptr;
 struct libusb_device_handle * GAOMON_S620::DeviceInterface::dev_handle = nullptr;
 
-int GAOMON_S620::DeviceInterface::init() {
+Error GAOMON_S620::DeviceInterface::init() {
 	int32_t r = libusb_init(&ctx);
 
 	if(r < 0) {
 		printf("Init Error: %d\n", r);
-		return 1;
+		return Error::LIB_USB_INIT_FAILED;
 	}
 
 	dev_handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
 
 	if(dev_handle == NULL) {
 		printf("Cannot open device\n");
-		return 1;
+		return Error::OPEN_DEVICE_FAILED;
 	}
 
 	printf("Device opened\n");
@@ -48,15 +48,15 @@ int GAOMON_S620::DeviceInterface::init() {
 
 	if(r < 0) {
 		printf("Cannot claim interface.\n");
-		return 1;
+		return Error::CLAIM_INTERFACE_FAILED;
 	}
 
 	printf("Interface claimed!\n");
 
-	return 0;
+	return Error::NO_ERROR;
 };
 
-int GAOMON_S620::DeviceInterface::read(uint8_t * output) {
+int32_t GAOMON_S620::DeviceInterface::read(uint8_t * output) {
 	return libusb_bulk_transfer(
 		dev_handle, BULK_EP_OUT,
 		(uint8_t *) output, PACKET_LENGTH,
@@ -64,12 +64,12 @@ int GAOMON_S620::DeviceInterface::read(uint8_t * output) {
 	);
 };
 
-int GAOMON_S620::DeviceInterface::stop() {
+Error GAOMON_S620::DeviceInterface::stop() {
 	const int r = libusb_release_interface(dev_handle, 0);
 
 	if(r != 0) {
 		printf("Cannot release the interface.\n");
-		return r;
+		return Error::INTERFACE_RELEASE_FAILED;
 	}
 
 	printf("Interface released.\n");
@@ -77,7 +77,7 @@ int GAOMON_S620::DeviceInterface::stop() {
 	libusb_close(dev_handle);
 	libusb_exit(ctx);
 
-	return 0;
+	return Error::NO_ERROR;
 };
 
 
@@ -135,7 +135,7 @@ void GAOMON_S620::Packet::printPacket() {
 const char * GAOMON_S620::UInput::DEVICE_NAME = "Gaomon S620 (pytness)";
 int GAOMON_S620::UInput::fileDescriptor = 0;
 
-int GAOMON_S620::UInput::init() {
+Error GAOMON_S620::UInput::init() {
 	fileDescriptor = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 
 	// enable left click
@@ -209,7 +209,7 @@ int GAOMON_S620::UInput::init() {
 	// Create device
 	ioctl(fileDescriptor, UI_DEV_CREATE);
 
-	return 0;
+	return Error::NO_ERROR;
 };
 
 void GAOMON_S620::UInput::stop() {
@@ -270,12 +270,17 @@ void GAOMON_S620::UInput::sync() {
 	write(fileDescriptor, &event, sizeof(struct input_event));
 };
 
-void GAOMON_S620::init() {
-	DeviceInterface::init();
-	UInput::init();
+Error GAOMON_S620::init() {
+	Error device_init = DeviceInterface::init();
+
+	if (device_init != Error::NO_ERROR) {
+		return device_init;
+	}
+
+	return UInput::init();
 };
 
-void GAOMON_S620::stop() {
+Error GAOMON_S620::stop() {
 	UInput::stop();
-	DeviceInterface::stop();
+	return DeviceInterface::stop();
 };
